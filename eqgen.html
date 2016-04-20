@@ -1,0 +1,323 @@
+<html>
+<head>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<style>
+html, body { width:  100%; height: 100%; margin: 0px; font-size:1.0em; font-family:monospace }
+canvas { position: fixed; top:0; left:40; }
+#control { padding:20px; position: fixed; top:0; left:40; z-index:1; background:rgba(240,240,240,0.6); border-radius:4px; } 
+label { display: inline-block; float:left; clear:left; width:70px; font-weight:600;}
+input { display: inline-block; float:left; width:150px; }
+h3 { display: block; clear: both; height:30px; padding-top:10px; font-size:1.4em; font-variant:small-caps; font-weight:800;}
+button { background-color:#DDDDDD; border:none; border-radius: 4px; margin-top:3px }
+button:hover { background-color:#CCCCCC; }
+
+</style>
+</head>
+<body onwheel="mousewheel()">
+
+<canvas id="canvas" mousewheel>
+	No canvas?
+</canvas>
+
+<button data-toggle="collapse" data-target="#control" class="btn" style="position:fixed; z-index:1">S</button>
+<button class="btn" style="position:fixed; top:50; z-index:1" onclick="reset()">R</button>
+<button class="btn" style="position:fixed; top:100; z-index:1">X</button>
+
+<a href="http://github.com/herzig" target="_blank" style="padding: 10px; position:absolute; bottom: 30px; z-index:1; background-color:#DDDDDD;" onclick="()"><img src="github.png"></img></a>
+
+<div id="links" class="collapse">
+				
+</div>
+
+<div id="control" class="">
+	<label>X' = X + </label> 
+	<input type="text" id="xformula" onchange="readInputs()"/>
+	<button onclick='gen($("#xformula"))'>G</button>
+
+	<label>Y' = X + </label> 
+	<input type="text" id="yformula" onchange="readInputs()"/>
+	<button onclick='gen($("#yformula"))'>G</button>
+	<span id="ytex"></span>
+
+	<label>R' = Y + </label> 
+	<input type="text" id="rformula" onchange="readInputs()"/>
+	<button  onclick='gen($("#rformula"))'>G</button>
+	<span id="rtex"></span>
+
+	<label>G' = G + </label> 
+	<input type="text" id="gformula" onchange="readInputs()"/>
+	<button onclick='gen($("#gformula"))'>G</button>
+	<span id="gtex"></span>
+
+	<label>B' = B + </label> 
+	<input type="text" id="bformula" onchange="readInputs()"/>
+	<button onclick='gen($("#bformula"))'>G</button>
+	<span id="btex"></span>
+
+	<h3>Generator</h3>
+	<label>
+		<abbr title="Functions used to build random expressions. Ex: sin(a), tan(a), a*a, a+a, a+b... Arguments are only placeholders.">Functions</abbr>
+	</label> 
+	<input type="text" id="functions" onchange="readInputs()" value="tan(a); a*b"/> 
+
+	<label>
+	<abbr title="Symbols, constans or nullary functions. x, y, t are defined symbols. Ex: 0.44, x, y, t, 3.14, random(), Math.tan(x), x*x, sqrt(t)...">Terminals</abbr>
+	</label> <input type="text" id="terminals" onchange="readInputs()" value="x; y; t; 0.043"/> 
+	<label> Depth </label><input type="number" id="depth" onchange="readInputs()" value="5"/> 
+
+	<h3>Visual</h3>
+	<label>Points</label> <input type="number" id="numTracers" value="900" onchange="readInputs()" />
+	<label>Size</label> <input type="number" id="tracerSize" value="0.003" onchange="readInputs()" />
+	<label>Width</label> <input type="number" id="lineWidth" onchange="readInputs()" value="0.0001" />
+	<label>Fade</label> <input type="number" id="fade" onchange="readInputs()" value=0.05 />
+</div>
+
+<script src="math.js"></script>
+<script>
+
+var xfunction, yfunction, rfunction, gfunction, bfunction;
+
+var canvas = $("#canvas")[0];
+var ctx = canvas.getContext("2d");
+
+var xs = -1.0, xe = 1.0;
+var ys = -1.0, ye = 1.0;
+
+var t = 0;
+
+var numTracers, tracerSize, lineWidth, fade;
+var tracers = [];
+var terminals, functions, maxDepth;
+
+var link;
+
+function genLink()
+{
+	var url = location.protocol + '//' + location.host + location.pathname;
+
+	url += "?x="+$("#xformula").val() +"&y="+$("#yformula").val()
+					+"&r="+$("#rformula").val()+"&g="+$("#gformula").val()+"&b="+$("#bformula").val()
+					+"&points="+$("#numTracers").val()+"&psize="+$("#tracerSize").val()
+					+"&width="+$("#lineWidth").val()+"&fade="+$("#fade").val();
+
+	return url;
+}
+
+function readInputs() {
+	numTracers = $("#numTracers").val();
+	tracerSize = $("#tracerSize").val();
+	lineWidth = $("#lineWidth").val();
+	fade = $("#fade").val();
+
+	xfunction = math.parse($("#xformula").val()).compile();
+	yfunction = math.parse($("#yformula").val()).compile();
+	rfunction = math.parse($("#rformula").val()).compile();
+	gfunction = math.parse($("#gformula").val()).compile();
+	bfunction = math.parse($("#bformula").val()).compile();
+
+	terminals = parseTerminals($("#terminals").val());
+	functions = parseFunctions($("#functions").val());
+
+	maxDepth = $("#depth").val();
+
+}
+
+function gen(box) {
+	var expr = buildTree(0, maxDepth, functions, terminals);
+	box.val(expr.toString());
+	readInputs();
+}
+
+function parseFunctions(str) {
+	var tok = str.split(";");
+	
+	var functions = [];
+	for (var i = 0; i < tok.length; ++i) {
+			var node = math.parse(tok[i]);
+			functions.push(node);
+	}
+	return functions;
+}
+
+function parseTerminals(str) {
+	var tok = str.split(";");
+	
+	var terminals = [];
+	for (var i = 0; i < tok.length; ++i) {
+			var node = math.parse(tok[i]);
+			terminals.push(node);
+	}
+	return terminals;
+}
+
+function buildTree(depth, maxDepth, functions, terminals) {
+	if (depth == maxDepth) {
+		var i = Math.floor((Math.random()*terminals.length));
+		return terminals[i].clone();
+	}
+	else {
+		var i = Math.floor((Math.random()*functions.length));
+
+		var node = functions[i].clone();
+		for (var i = 0; i < node.args.length; ++i) {
+			node.args[i] = buildTree(depth+1, maxDepth, functions, terminals);
+		}
+
+		return node;
+	}
+}
+
+function getPrm(name) {
+    var url = decodeURIComponent(window.location.search.substring(1));
+    var urlvars = url.split('&');
+
+    for (var i = 0; i < urlvars.length; i++) {
+        var pair = urlvars[i].split('=');
+
+        if (pair[0] === name) {
+            return pair[1] === undefined ? true : pair[1];
+        }
+    }
+};
+
+function reset() {
+	ctx.globalAlpha = 1.0
+	ctx.fillStyle="#FFFFFF";
+	ctx.fillRect(xs, ys, (xe-xs), (ye-ys));
+
+	tracers = [];
+}
+
+function rgb(r, g, b){
+  return ["rgb(",Math.floor(r*255),",",Math.floor(g*255),",",Math.floor(b*255),")"].join("");
+}
+
+function inittracer(tracer) {
+	tracer.x = (Math.random()*2-1)*(xe-xs);
+	tracer.y = (Math.random()*2-1)*(ye-ys);
+}
+
+var aspect = 1;
+function draw() {
+	++t; 
+
+	if (canvas.width != window.innerWidth || canvas.height != window.innerHeight)
+	{
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		var w = canvas.width;
+		var h = canvas.height;
+
+		ctx.restore();
+		ctx.scale(w/(xe-xs),h/(ye-ys));
+		ctx.translate(-1*xs, -1*ys);
+		aspect = w/h;
+	}
+
+	if (tracers.length < numTracers) {
+		for (var i = 0; i < numTracers - tracers.length; ++i) {
+			tracers.push({x:0, y:0});
+			inittracer(tracers[i]);
+		}
+	}
+	else if (tracers.length > numTracers) {
+		tracers.splice(0, tracers.length - numTracers);
+	}
+
+	ctx.lineWidth = lineWidth;
+	ctx.globalAlpha= fade;
+	ctx.fillStyle="#FFFFFF";
+	ctx.fillRect(xs, ys, (xe-xs), (ye-ys));
+	ctx.globalAlpha=1.0;
+	ctx.fillStyle="#000000";
+
+	ctx.moveTo(tracers[0].x, tracers[0].y);
+	ctx.beginPath();
+	for (var i = 0; i < tracers.length; ++i) {
+
+		var v = tracers[i];
+
+		var scope = {x: v.x, y: v.y, t: t};
+		v.x += xfunction.eval(scope);
+		v.y += yfunction.eval(scope);
+		
+		// check bounds and reset tracers
+		if (v.x > xe || v.x < xs)
+			v.x = (Math.random()*2-1)*(xe-xs);
+
+		if (v.y > ye || v.y < ys)
+			v.y = (Math.random()*2-1)*(ye-ys);
+
+		var color =rgb(
+			rfunction.eval(scope),
+			gfunction.eval(scope),
+			bfunction.eval(scope));
+		ctx.fillStyle = color;
+		ctx.strokeStyle = color;
+
+		ctx.fillRect(
+			v.x-(tracerSize*0.5), 
+			v.y-(tracerSize*aspect*0.5), 
+			tracerSize, 
+			tracerSize*aspect);
+
+		ctx.lineTo(v.x, v.y);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(v.x, v.y);
+	}
+}
+
+readInputs();
+gen($("#xformula"));
+gen($("#yformula"));
+gen($("#rformula"));
+gen($("#gformula"));
+gen($("#bformula"));
+
+var x = getPrm("x");
+if (x != undefined)
+	$("#xformula").val(x);
+
+var y = getPrm("y");
+if (y != undefined)
+	$("#yformula").val(y);
+
+var r = getPrm("r");
+if (r != undefined)
+	$("#rformula").val(r);
+
+var g = getPrm("g");
+if (g != undefined)
+	$("#gformula").val(g);
+
+var b = getPrm("b");
+if (b != undefined)
+	$("#bformula").val(b);
+
+var points = getPrm("points");
+if (points != undefined)
+	$("#numTracers").val(points);
+
+var psize = getPrm("psize");
+if (psize != undefined)
+	$("#tracerSize").val(psize);
+
+var lwidth = getPrm("width");
+if (lwidth != undefined)
+	$("#lineWidth").val(lwidth);
+
+var fade = getPrm("fade");
+if (fade != undefined)
+	$("#fade").val(fade);
+
+readInputs();
+setInterval(draw, 40);
+
+</script>
+
+</body>
+</html>
