@@ -6,12 +6,16 @@
 <style>
 html, body { width:  100%; height: 100%; margin: 0px; font-size:1.0em; font-family:monospace }
 canvas { position: fixed; top:0; left:40; }
-#control { padding:20px; position: fixed; top:0; left:40; z-index:1; background:rgba(240,240,240,0.6); border-radius:4px; } 
+#control { padding:20px; position: fixed; top:0; left:40; z-index:1; background:rgba(240,240,240,0.6); border-radius:4px; width:300px; } 
 label { display: inline-block; float:left; clear:left; width:70px; font-weight:600;}
 input { display: inline-block; float:left; width:150px; }
 h3 { display: block; clear: both; height:30px; padding-top:10px; font-size:1.4em; font-variant:small-caps; font-weight:800;}
 button { background-color:#DDDDDD; border:none; border-radius: 4px; margin-top:3px }
 button:hover { background-color:#CCCCCC; }
+.vertical {
+	transform: rotate(-90deg);
+	transform-origin: 0 0;
+}
 
 </style>
 </head>
@@ -23,38 +27,31 @@ button:hover { background-color:#CCCCCC; }
 
 <button data-toggle="collapse" data-target="#control" class="btn" style="position:fixed; z-index:1">S</button>
 <button class="btn" style="position:fixed; top:50; z-index:1" onclick="reset()">R</button>
-<button class="btn" style="position:fixed; top:100; z-index:1">X</button>
-
-<a href="http://github.com/herzig" target="_blank" style="padding: 10px; position:absolute; bottom: 30px; z-index:1; background-color:#DDDDDD;" onclick="()"><img src="github.png"></img></a>
-
-<div id="links" class="collapse">
-				
-</div>
+<a href="http://github.com/herzig/eqgen" target="_blank" style="padding: 10px; position:fixed; bottom: 30px; z-index:1; background-color:#DDDDDD;" onclick="()">
+	<img src="github.png"></img>
+</a>
+<a href="mailto:i@ivoherzig.ch" class="vertical" style="position:fixed; left:12px; bottom: 80; z-index:1; font-size:1.5em">i@ivoherzig.ch</a>
 
 <div id="control" class="collapse">
 	<label>X' = X + </label> 
 	<input type="text" id="xformula" onchange="readInputs()"/>
 	<button onclick='gen($("#xformula"))'>G</button>
 
-	<label>Y' = X + </label> 
+	<label>Y' = Y + </label> 
 	<input type="text" id="yformula" onchange="readInputs()"/>
 	<button onclick='gen($("#yformula"))'>G</button>
-	<span id="ytex"></span>
 
-	<label>R' = Y + </label> 
+	<label>R' = R + </label> 
 	<input type="text" id="rformula" onchange="readInputs()"/>
 	<button  onclick='gen($("#rformula"))'>G</button>
-	<span id="rtex"></span>
 
 	<label>G' = G + </label> 
 	<input type="text" id="gformula" onchange="readInputs()"/>
 	<button onclick='gen($("#gformula"))'>G</button>
-	<span id="gtex"></span>
 
 	<label>B' = B + </label> 
 	<input type="text" id="bformula" onchange="readInputs()"/>
 	<button onclick='gen($("#bformula"))'>G</button>
-	<span id="btex"></span>
 
 	<h3>Generator</h3>
 	<label>
@@ -72,6 +69,10 @@ button:hover { background-color:#CCCCCC; }
 	<label>Size</label> <input type="number" id="tracerSize" value="0.003" onchange="readInputs()" />
 	<label>Width</label> <input type="number" id="lineWidth" onchange="readInputs()" value="0.0001" />
 	<label>Fade</label> <input type="number" id="fade" onchange="readInputs()" value=0.05 />
+
+	<h3>Share</h3>
+	<button id="copyLink" onclick="$('#link').select()">Select</button><input type="text" id="link" />
+</script>
 </div>
 
 <script src="math.js"></script>
@@ -101,7 +102,6 @@ function genLink()
 					+"&r="+$("#rformula").val()+"&g="+$("#gformula").val()+"&b="+$("#bformula").val()
 					+"&points="+$("#numTracers").val()+"&psize="+$("#tracerSize").val()
 					+"&width="+$("#lineWidth").val()+"&fade="+$("#fade").val();
-
 	return url;
 }
 
@@ -121,6 +121,8 @@ function readInputs() {
 	functions = parseFunctions($("#functions").val());
 
 	maxDepth = $("#depth").val();
+
+	$("#link").val(genLink());
 
 }
 
