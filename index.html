@@ -41,15 +41,15 @@ button:hover { background-color:#CCCCCC; }
 	<input type="text" id="yformula" onchange="readInputs()"/>
 	<button onclick='gen($("#yformula"))'>G</button>
 
-	<label>R' = R + </label> 
+	<label>R' = </label> 
 	<input type="text" id="rformula" onchange="readInputs()"/>
 	<button  onclick='gen($("#rformula"))'>G</button>
 
-	<label>G' = G + </label> 
+	<label>G' = </label> 
 	<input type="text" id="gformula" onchange="readInputs()"/>
 	<button onclick='gen($("#gformula"))'>G</button>
 
-	<label>B' = B + </label> 
+	<label>B' = </label> 
 	<input type="text" id="bformula" onchange="readInputs()"/>
 	<button onclick='gen($("#bformula"))'>G</button>
 
@@ -66,12 +66,18 @@ button:hover { background-color:#CCCCCC; }
 
 	<h3>Visual</h3>
 	<label>Points</label> <input type="number" id="numTracers" value="900" onchange="readInputs()" />
-	<label>Size</label> <input type="number" id="tracerSize" value="0.003" onchange="readInputs()" />
+	<label>Size</label> <input type="number" id="tracerSize" value="0.0015" onchange="readInputs()" />
 	<label>Width</label> <input type="number" id="lineWidth" onchange="readInputs()" value="0.0001" />
 	<label>Fade</label> <input type="number" id="fade" onchange="readInputs()" value=0.05 />
 
 	<h3>Share</h3>
 	<button id="copyLink" onclick="$('#link').select()">Select</button><input type="text" id="link" />
+	<h3> Or try these </h3>
+	<a href="http://herzig.github.io/eqgen/?x=tan(tan(y)) / tan(tan(x)) / (y / t / tan(y) / tan(tan(y))) / (t / x / tan(x) / (tan(0.043) / tan(x)) / tan(y / y / tan(y)))&y=0&r=tan(tan(tan(y) / tan(y))) / tan(tan(tan(t) / tan(y)))&g=tan(t * x) * tan(tan(y)) * tan(tan(x)) * tan(x) * tan(0.043) * tan(tan(y * 0.043) * tan(0.043 * y))&b=0.043 * x * x * x * y * t * tan(x) * tan(0.043 * y) * 0.043 * t * tan(y) * tan(tan(y * x * 0.043 * t))&points=900&psize=0.003&width=0.0001&fade=0.05">
+		[0]</a>
+	<a href="http://herzig.github.io/eqgen/?x=tan(tan(tan(sin(sin(tan(sin(y)) * sin(x) * tan(x)))) * sin(tan(2 * 3.1415 * x * t * y) * sin(2 * 3.1415 * y * x * t)) * tan(tan(tan(x)) * sin(tan(x)) * sin(sin(x * 2 * 3.1415)))))&y=tan(tan(tan(tan(tan(t * x) * tan(tan(x)) * tan(sin(t * 2 * 3.1415)) * tan(sin(tan(x) * 2 * 3.1415 * x))))))&r=sin(sin(sin(tan(sin(sin(sin(tan(x))))) * tan(tan(sin(y)) * y * 2 * 3.1415 * 2 * 3.1415 * x) * tan(tan(t) * 2 * 3.1415 * 2 * 3.1415 * sin(x * x)))))&g=sin(sin(sin(sin(tan(tan(x)) * tan(t * t)) * sin(tan(x) * sin(t)) * sin(tan(2 * 3.1415 * x))) * tan(sin(sin(sin(sin(y * t)))))))&b=sin(tan(tan(tan(sin(x * t * sin(y)))))) * tan(tan(sin(tan(tan(tan(x))))) * tan(tan(tan(sin(y * x))))) * sin(sin(sin(sin(sin(y * x))) * sin(sin(y * y * tan(x))))) * sin(tan(tan(tan(t * t))) * tan(sin(2 * 3.1415 * x) * sin(y * 2 * 3.1415)) * sin(sin(tan(sin(sin(2 * 3.1415))))))&points=800&psize=0.003&width=0.0001&fade=0.05">
+		[1]</a>
+	<a href="http://herzig.github.io/eqgen/?x=tan(x * t * y * 0.043 * tan(0.043 * y) * tan(x * y * tan(0.043)))&y=tan(tan(tan(y) * tan(x)) * tan(tan(x) * tan(0.043)))&r=tan(tan(x * t)) * 0.043 * x * y * t * tan(y) * t * x * tan(tan(tan(t * x)))&g=tan(tan(tan(0.043 * t * t * y)))&b=tan(tan(tan(y * y))) * x * 0.043 * tan(0.043) * tan(0.043) * tan(x) * tan(t * x) * t * t * tan(y)&points=100&psize=0.001&width=0.001&fade=0.05">[2]</a>
 </script>
 </div>
 
